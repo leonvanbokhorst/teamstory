@@ -13,7 +13,7 @@ This project is a simple web app that shows creative stories about your team's A
 ```bash
 uv venv
 source venv/bin/activate
-uv pip install -r pyproject.toml
+uv pip install .  # -r is for requirements.txt files
 ```
 
 2. Start the server:
