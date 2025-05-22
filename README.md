@@ -31,14 +31,17 @@ Stories are generated on demand, so the board will always show something new whe
 
 ## Docker
 
-You can run the application in a container:
+You can run the application in a container (the Docker image uses `uv` to install dependencies):
+
 
 ```bash
 docker build -t teamstory .
 docker run -p 8000:8000 -e OPENAI_API_KEY=your-key teamstory
 ```
-The Dockerfile installs [uv](https://github.com/astral-sh/uv) and uses it to install the dependencies listed in `pyproject.toml`.
 
 ## Continuous Integration
 
-A GitHub Actions workflow installs uv, installs dependencies with `uv pip install -r pyproject.toml`, runs the unit tests and, when changes are pushed to `main`, builds and publishes a Docker image to the GitHub Container Registry.
+The CI workflow installs dependencies with [uv](https://github.com/astral-sh/uv),
+runs the unit tests and, when changes are pushed to `main`, builds and
+publishes a Docker image to the GitHub Container Registry.
+
