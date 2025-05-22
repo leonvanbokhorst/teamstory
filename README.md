@@ -28,3 +28,17 @@ uvicorn main:app --reload --host 0.0.0.0 --port 8000
 Set your OpenAI API key in the `OPENAI_API_KEY` environment variable before running the app so announcements can be generated using the API.
 
 Stories are generated on demand, so the board will always show something new when it refreshes.
+
+## Docker
+
+You can run the application in a container:
+
+```bash
+docker build -t teamstory .
+docker run -p 8000:8000 -e OPENAI_API_KEY=your-key teamstory
+```
+The Dockerfile installs [uv](https://github.com/astral-sh/uv) and uses it to install the dependencies listed in `pyproject.toml`.
+
+## Continuous Integration
+
+A GitHub Actions workflow installs uv, installs dependencies with `uv pip install -r pyproject.toml`, runs the unit tests and, when changes are pushed to `main`, builds and publishes a Docker image to the GitHub Container Registry.
