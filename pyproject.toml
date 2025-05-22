@@ -10,7 +10,8 @@ dependencies = [
     "fastapi",
     "uvicorn",
     "openai",
-    "python-dotenv"
+    "python-dotenv",
+    "litellm"
 ]
 
 [project.scripts]
