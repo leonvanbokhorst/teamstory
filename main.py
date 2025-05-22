@@ -1,11 +1,22 @@
 import os
 import random
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse
-import openai
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+
+# Explicitly get API key from environment and pass to client
+api_key_from_env = os.getenv("OPENAI_API_KEY")
+if not api_key_from_env:
+    # This print will go to Docker logs if the key is missing.
+    print("CRITICAL ERROR: OPENAI_API_KEY environment variable not set.")
+    # You might want to raise an exception here or handle it more gracefully
+    # depending on how you want the app to behave if the key is missing.
+client = OpenAI(api_key=api_key_from_env)
 
 context = {
     "projects": [],
@@ -66,7 +77,13 @@ BOARD_PAGE = """
 </html>
 """
 
-@app.get('/admin', response_class=HTMLResponse)
+
+@app.get("/", response_class=RedirectResponse, include_in_schema=False)
+async def root_redirect():
+    return RedirectResponse(url="/board")
+
+
+@app.get("/admin", response_class=HTMLResponse)
 async def admin(request: Request):
     item_type = request.query_params.get("item_type")
     text = request.query_params.get("text")
@@ -74,25 +91,33 @@ async def admin(request: Request):
         context[item_type].append(text)
     return ADMIN_FORM
 
-@app.get('/board', response_class=HTMLResponse)
+
+@app.get("/board", response_class=HTMLResponse)
 async def board():
     return BOARD_PAGE
+
 
 def generate_story() -> str:
     if not any(context.values()):
         return "No stories yet. Add context via /admin."
-    project = random.choice(context['projects']) if context['projects'] else 'a project'
-    student = random.choice(context['students']) if context['students'] else 'a student'
-    educator = random.choice(context['educators']) if context['educators'] else 'an educator'
-    technique = random.choice(context['techniques']) if context['techniques'] else 'a technique'
-    result = random.choice(context['results']) if context['results'] else 'great results'
+    project = random.choice(context["projects"]) if context["projects"] else "a project"
+    student = random.choice(context["students"]) if context["students"] else "a student"
+    educator = (
+        random.choice(context["educators"]) if context["educators"] else "an educator"
+    )
+    technique = (
+        random.choice(context["techniques"]) if context["techniques"] else "a technique"
+    )
+    result = (
+        random.choice(context["results"]) if context["results"] else "great results"
+    )
     prompt = (
         "Create a short, upbeat announcement about an AI education project using "
-        f"the following context:\n"
-        f"Project: {project}\n"
-        f"Student: {student}\n"
-        f"Educator: {educator}\n"
-        f"Technique: {technique}\n"
+        f"the following context:\\n"
+        f"Project: {project}\\n"
+        f"Student: {student}\\n"
+        f"Educator: {educator}\\n"
+        f"Technique: {technique}\\n"
         f"Result: {result}"
     )
     templates = [
@@ -101,25 +126,29 @@ def generate_story() -> str:
         f"{educator} guides {student} through {project} with {technique}, unveiling {result}.",
     ]
     try:
-        resp = openai.ChatCompletion.create(
-            model="gpt-4.1-nano",
+        # Modified API call
+        completion = client.chat.completions.create(
+            model="gpt-4.1-nano",  # Or your desired model
             messages=[
                 {
                     "role": "system",
-                    "content": "You craft short and enthusiastic announcements about AI education projects."
+                    "content": "You craft short and enthusiastic announcements about AI education projects.",
                 },
                 {"role": "user", "content": prompt},
             ],
             max_tokens=60,
         )
-        story = resp.choices[0].message["content"].strip()
+        story = completion.choices[
+            0
+        ].message.content.strip()  # Modified response access
         if story:
             return story
-    except Exception:
+    except Exception as e:
+        print(f"Error during OpenAI API call: {e}")
         pass
     return random.choice(templates)
 
-@app.get('/story')
+
+@app.get("/story")
 async def story():
     return JSONResponse({"story": generate_story()})
-
