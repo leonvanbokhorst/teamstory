@@ -2,11 +2,9 @@ import os
 import random
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
-from dotenv import load_dotenv
-import litellm  # Using litellm
 
-# Load environment variables from .env file
-load_dotenv()
+# import litellm # Using litellm # TODO: This was commented out, assuming it's intentional or will be uncommented by user. If litellm is used, ensure it's uncommented.
+import litellm  # Re-added based on usage below. If this was meant to be commented, please advise.
 
 app = FastAPI()
 
