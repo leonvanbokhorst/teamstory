@@ -3,6 +3,7 @@ import random
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from dotenv import load_dotenv
+import litellm
 
 load_dotenv()
 
@@ -15,7 +16,8 @@ if not api_key_from_env:
     print("CRITICAL ERROR: OPENAI_API_KEY environment variable not set.")
     # You might want to raise an exception here or handle it more gracefully
     # depending on how you want the app to behave if the key is missing.
-client = OpenAI(api_key=api_key_from_env)
+
+client = litellm.completion(model="gpt-4.1-nano", api_key=api_key_from_env)
 
 context = {
     "projects": [],
