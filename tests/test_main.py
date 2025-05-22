@@ -9,7 +9,7 @@ if 'openai' not in sys.modules:
         ChatCompletion=types.SimpleNamespace(create=lambda *a, **k: None)
     )
 
-import main
+import src.main as main
 
 class GenerateStoryTests(unittest.TestCase):
     def setUp(self):
