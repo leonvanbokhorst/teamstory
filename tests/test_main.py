@@ -27,8 +27,8 @@ class GenerateStoryTests(unittest.TestCase):
         story = main.generate_story()
         self.assertEqual(story, "No stories yet. Add context via /admin.")
 
-    @mock.patch('main.openai.ChatCompletion.create')
-    def test_openai_success(self, mock_create):
+    @mock.patch('main.litellm.completion')
+    def test_litellm_success(self, mock_create):
         # Populate minimal context
         main.context['projects'].append('proj1')
         main.context['students'].append('stud1')
@@ -45,8 +45,8 @@ class GenerateStoryTests(unittest.TestCase):
         self.assertEqual(story, 'Custom story.')
 
     @mock.patch('main.random.choice', side_effect=lambda seq: seq[0])
-    @mock.patch('main.openai.ChatCompletion.create', side_effect=Exception('fail'))
-    def test_openai_failure(self, mock_create, mock_choice):
+    @mock.patch('main.litellm.completion', side_effect=Exception('fail'))
+    def test_litellm_failure(self, mock_create, mock_choice):
         main.context['projects'].append('proj1')
         main.context['students'].append('stud1')
         main.context['educators'].append('edu1')
