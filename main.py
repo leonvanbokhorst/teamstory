@@ -154,3 +154,76 @@ def generate_story() -> str:
 @app.get("/story")
 async def story_endpoint():  # Renamed to avoid conflict with any 'story' variable
     return JSONResponse({"story": generate_story()})
+
+
+# Quote features -------------------------------------------------------------
+
+# Sample quotes to rotate through. In a real deployment these might come from a
+# database or external API.
+quotes = [
+    "The only limit to our realization of tomorrow is our doubts of today. - Franklin D. Roosevelt",
+    "Creativity is intelligence having fun. - Albert Einstein",
+    "Everything you can imagine is real. - Pablo Picasso",
+    "You miss 100% of the shots you don't take. - Wayne Gretzky",
+    "Stay hungry, stay foolish. - Steve Jobs",
+]
+
+
+def generate_quote() -> str:
+    """Return a random quote from the list."""
+    return random.choice(quotes)
+
+
+QUOTE_PAGE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quote Board</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 20%; }
+        #quote { font-size: 2em; }
+        #spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <script>
+    async function updateQuote() {
+        document.getElementById('spinner').style.display = 'block';
+        const resp = await fetch('/quote');
+        const data = await resp.json();
+        document.getElementById('quote').innerText = data.quote;
+        document.getElementById('spinner').style.display = 'none';
+    }
+    setInterval(updateQuote, 5 * 60 * 1000); // every 5 minutes
+    window.onload = updateQuote;
+    </script>
+</head>
+<body>
+    <div id="spinner"></div>
+    <div id="quote">Loading quote...</div>
+</body>
+</html>
+"""
+
+
+@app.get("/quotes", response_class=HTMLResponse)
+async def quotes_page() -> str:
+    """Serve the page that cycles through quotes."""
+    return QUOTE_PAGE
+
+
+@app.get("/quote")
+async def quote_endpoint() -> JSONResponse:
+    """Endpoint returning a single quote as JSON."""
+    return JSONResponse({"quote": generate_quote()})
