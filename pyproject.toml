@@ -1,0 +1,10 @@
+[project]
+name = "teamstory"
+version = "0.1.0"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "openai",
+]
+requires-python = ">=3.11"
+
