@@ -1,10 +1,11 @@
 FROM python:3.11-slim
 WORKDIR /app
 
-# Install uv and runtime dependencies
+# Install uv and project dependencies
 RUN pip install uv
+
 COPY pyproject.toml ./
-RUN uv pip install --no-cache-dir -r pyproject.toml
+RUN uv pip install -r pyproject.toml
 
 # Copy source
 COPY . .
