@@ -1,9 +1,11 @@
 [project]
 name = "teamstory"
 version = "0.1.0"
+
 description = "Team Story Announcement Board"
 readme = "README.md"
 requires-python = ">=3.11"
+
 dependencies = [
     "fastapi",
     "uvicorn",

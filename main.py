@@ -1,8 +1,11 @@
+import os
 import random
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
+import openai
 
 app = FastAPI()
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 context = {
     "projects": [],
@@ -83,11 +86,37 @@ def generate_story() -> str:
     educator = random.choice(context['educators']) if context['educators'] else 'an educator'
     technique = random.choice(context['techniques']) if context['techniques'] else 'a technique'
     result = random.choice(context['results']) if context['results'] else 'great results'
+    prompt = (
+        "Create a short, upbeat announcement about an AI education project using "
+        f"the following context:\n"
+        f"Project: {project}\n"
+        f"Student: {student}\n"
+        f"Educator: {educator}\n"
+        f"Technique: {technique}\n"
+        f"Result: {result}"
+    )
     templates = [
         f"{student} and {educator} are exploring {technique} in {project}, leading to {result}.",
         f"In {project}, {student} works with {educator} using {technique}. They achieved {result}.",
         f"{educator} guides {student} through {project} with {technique}, unveiling {result}.",
     ]
+    try:
+        resp = openai.ChatCompletion.create(
+            model="gpt-4.1-nano",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You craft short and enthusiastic announcements about AI education projects."
+                },
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=60,
+        )
+        story = resp.choices[0].message["content"].strip()
+        if story:
+            return story
+    except Exception:
+        pass
     return random.choice(templates)
 
 @app.get('/story')
